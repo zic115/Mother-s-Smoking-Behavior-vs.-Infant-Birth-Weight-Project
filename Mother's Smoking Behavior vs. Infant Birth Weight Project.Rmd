@@ -1,0 +1,242 @@
+---
+title: "Math 183 - Project 1"
+author: 'Ziyue (Bella) Chen, PID: A14524683'
+date: "11/06/2020"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+# How can mother's smoking behavior affect infant birth weight?
+Smoking is a harmful behavior that can cause birth defects, so it is expected that as the number of cigarettes smoked per day for a mother during pregnancy increases, the weight of her baby at birth will decrease. In this project, the two variables will have their distributions and relationship analyzed, and a LS regression model will be generated and tested to demonstrate whether this relationship can be fitted into a linear model.
+
+
+
+# 1. Data Preparation
+```{r}
+# Data interested to know: infant birth weight vs. mother's smoking behavior
+data <- read.csv("Bwghtgrams.csv", header = T)
+head(data, n = 2)
+```
+
+```{r}
+# Dimension of the original data
+dim(data)
+# Structure of the original data
+str(data)
+```
+
+```{r}
+# Variables interested to know:
+# Independent variable: cigs - number of cigarettes per day that an infant’s mother smoked during pregnancy
+cigs <- data$cigs
+# Dependent variable: bwghtgrams - infant birth weights in grams
+bwghtgrams <- data$bwghtgrams 
+```
+
+
+
+# 2a. Initial Data Analysis - "cigs"
+```{r}
+# Structure
+str(cigs)
+# Statistics
+summary(cigs)
+# Graphical Summary - Histogram
+hist(cigs, main = "Cigarettes/Day During Pregnancy", xlab = "number of cigarettes/day", ylab = "number of mothers")
+abline(v = mean(cigs), col = "green")
+abline(v = median(cigs), col = "red")
+# Graphical Summary - Boxplot
+boxplot(cigs, main = "Cigarettes/Day During Pregnancy", xlab = "number of cigarettes/day", horizontal = T)
+abline(v = mean(cigs), col = "green")
+abline(v = median(cigs), col = "red")
+```
+
+```{r}
+# The mean number of cigarettes/day during pregnancy is 2.087, the median is 0.000, the minimum is 0.000, and the maximum is 50.000.
+# The majority of the mothers don't smoke during pregnancy, but there are also ones who do smoke.
+# The mean is greater than the median because those who smoke are pulling up the mean.
+# The distribution of number of cigarettes/day in this sample is right skewed.
+```
+
+
+
+# 2b. Initial Data Analysis - "bwghtgrams"
+```{r}
+# Structure
+str(bwghtgrams)
+# Statistics
+summary(bwghtgrams)
+# Graphical Summary - Histogram
+hist(bwghtgrams, main = "Infant Birth Weights", xlab = "weight (grams)", ylab = "number of infants")
+abline(v = mean(bwghtgrams), col = "green")
+abline(v = median(bwghtgrams), col = "red")
+# Graphical Summary - Boxplot
+boxplot(bwghtgrams, main = "Infant Birth Weights", xlab = "weight (grams)", horizontal = T)
+abline(v = mean(bwghtgrams), col = "green")
+abline(v = median(bwghtgrams), col = "red")
+```
+
+```{r}
+# The mean infant birth weight is 3365g, the median is 3402g, the minimum is 652g, and the maximum is 7683g.
+# The mean and the median are similar.
+# The distribution of infant birth weight in this sample is approximately Normal.
+```
+
+
+
+# 3. Distribution Analysis
+```{r}
+# Distribution of infant birth weights
+hist(bwghtgrams, main = "Infant Birth Weights", xlab = "weight (grams)", ylab = "number of infants")
+```
+
+```{r}
+# Based on the histogram, this distribution is approximately Normal.
+```
+
+```{r}
+# By the Central Limit Theorem, the distribution of mean infant birth weight can also be approximately Normal as the size increases.
+# This sample mean will be replicated and have its distribution analyzed in the following steps.
+```
+
+```{r}
+# Random sample generated based on the bwghtgrams data
+sample(bwghtgrams, 100, replace = TRUE)
+```
+
+```{r}
+# Mean of this random sample
+mean(sample(bwghtgrams, 100, replace = TRUE))
+```
+
+```{r}
+# Replicate this mean 10000 times
+set.seed(1)
+mean_weight <- replicate(10000, mean(sample(bwghtgrams, 100, replace = TRUE)))
+```
+
+```{r}
+# Distribution of replicated sample mean
+hist(mean_weight, main = "Mean Infant Birth Weights", xlab = "weight (grams)", ylab = "number of infants")
+```
+
+```{r}
+# The distribution of the mean also shows a Normal distribution because of the Central Limit Theorem.
+```
+
+
+
+# 4. Regression Model Estimation
+```{r}
+# Scatter plot of bwghtgrams vs. cigs
+plot(cigs, bwghtgrams, xlab = "number of cigarettes/day", ylab = "infant birth weight (grams)")
+points(mean(cigs), mean(bwghtgrams), col = "indianred", pch = 19, cex = 2)
+legend("topright", c("point of averages (centre)"), col = "indianred", pch = 19)
+```
+
+```{r}
+# Data cleaning: there seems to be an outlier with an infant birth weight greater than 7000 grams
+data2 <- data[data$bwghtgrams<7000,]
+cigs <- data2$cigs
+bwghtgrams <- data2$bwghtgrams
+plot(cigs, bwghtgrams, xlab = "number of cigarettes/day", ylab = "infant birth weight (grams)")
+points(mean(cigs), mean(bwghtgrams), col = "indianred", pch = 19, cex = 2)
+legend("topright", c("point of averages (centre)"), col = "indianred", pch = 19)
+```
+
+```{r}
+# Correlation coefficient
+cor(cigs, bwghtgrams)
+```
+
+```{r}
+# The correlation coefficient is -0.15, so there is a negative correlation between infant birth weight and number of cigarettes during pregnancy.
+# However, this value is close to 0, which means the the correlation is not strong.
+```
+
+```{r}
+# Linear model
+lm(bwghtgrams~cigs)
+```
+
+```{r}
+# Linear model regression line
+model <- lm(bwghtgrams~cigs)
+model$coeff
+```
+
+```{r}
+# The estimated linear model should have a regression line of bwghtgrams = -14.3842 * cigs + 3392.0072.
+```
+
+```{r}
+# Plot with regression line
+plot(cigs, bwghtgrams, xlab = "number of cigarettes", ylab = "infant birth weight (grams)")
+abline(lm(bwghtgrams~cigs), col = "green")
+legend("topright", c("regression line: bwghtgrams on cigs"), col = "green", lty = 1)
+```
+
+
+# 5. Regression Model Testing
+```{r}
+# Residuals vs. predicted y
+preds <- predict(model)
+resids <- residuals(model)
+plot(preds, resids, xlab = "predicted y", ylab = "residuals")
+```
+
+```{r}
+# Residual plot
+plot(model$residuals, main = "Residuals Plot")
+abline(h = 0, col = "red")
+```
+
+```{r}
+# Classic linear regression model assumptions:
+# 1) Linear in parameters: bwghtgrams is linearly related to cigs by bwghtgrams = -14.3842 * cigs + 3392.0072.
+# 2) Random sampling: It is assumed that the mothers and the infants are randomly chosen from the population.
+# 3) Sample variation: The independent variable, which is the number of cigarettes smoked during pregnancy, is not a constant value.
+# 4) Zero condition mean: There seems to be a relationship between residuals and predicted y such that as the predicted y gets larger, the variance of the residuals also gets larger.
+# 5) Homoscedasticity: The residual plot shows no pattern, so the variance of the model is constant.
+```
+
+```{r}
+# The classical linear regression model assumptions are not all satisfied because as the predicted y gets larger, the variance of the residuals also gets larger.
+# Therefore, a linear regression model is not an appropriate model for the relationship between infant birth weight and number of cigarettes smoked during pregnancy. 
+```
+
+
+
+# 6. Conclusions and Interpretations
+```{r}
+# Solely based on the data provided, several conclusions can be made:
+# 1) Infant birth weight is negatively correlated with number of cigarettes/day during pregnancy, but the correlation is not strong. This means that smoking can make some contributions to a decreased birth weight.
+# 2) The linear model is not an appropriate model for the samples data.
+# 3) The infant birth weights is more Normally distributed.
+```
+
+```{r}
+# These conclusion are expected because of several reasons:
+# 1) In the data provided, the number of mothers who smoke is much smaller that of mothers who do not smoke, so there is not enough data to effectively measure the effect of smoking.
+# 2) Smoking is not the only factor that can affect infant birth weight, some other factors such as diet, genetic characteristics, emotions, etc. all have the potential to affect infant birth weight.
+```
+
+```{r}
+# Some adjustments can be made for future estimations:
+# 1) More samples can be drawn, especially samples from mothers who smoke during pregnancy.
+# 2) Try to minimize the effects of other factors, which means making them be controls instead of variables.
+```
+
+Even though this sample does not effectively demonstrate the harmful effect of smoking, mothers should still be aware that smoking is harmful and should avoid this behavior during pregnancy. Smoking is just bad :(
+
+
+
+
+
+
+
+
+
+
+
