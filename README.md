@@ -4,4 +4,6 @@ The course instructor, Professor Perinaz Ezzati, provided several datasets for t
 
 The analysis was done using R, so a R markdown named `Project 1.Rmd` was included.
 
-To see the report, you can go to `Project 1.docx`.
+To see the report, you can go to `Project 1.pdf`.
+
+Thank you :)
